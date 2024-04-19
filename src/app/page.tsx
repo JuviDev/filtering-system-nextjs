@@ -5,6 +5,7 @@ import { ChevronDown, Filter } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { QueryResult } from "@upstash/vector";
 import axios from "axios";
+import debounce from "lodash.debounce";
 
 import {
   Accordion,
@@ -106,6 +107,11 @@ export default function Home() {
     },
   });
 
+  const onSubmit = () => refetch();
+
+  const debouncedSubmit = debounce(onSubmit, 400);
+  const _debouncedSubmit = useCallback(debouncedSubmit, []);
+
   const applyArrayFilter = ({
     category,
     value,
@@ -126,12 +132,12 @@ export default function Home() {
         [category]: [...prev[category], value],
       }));
     }
+
+    _debouncedSubmit();
   };
 
   const minPrice = Math.min(filter.price.range[0], filter.price.range[1]);
   const maxPrice = Math.max(filter.price.range[0], filter.price.range[1]);
-
-  console.log(filter);
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -160,6 +166,8 @@ export default function Home() {
                       ...prev,
                       sort: option.value,
                     }));
+
+                    _debouncedSubmit();
                   }}
                 >
                   {option.name}
@@ -173,6 +181,7 @@ export default function Home() {
           </button>
         </div>
       </div>
+
       <section className="pb-24 pt-6">
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
           {/* Filters */}
@@ -280,6 +289,8 @@ export default function Home() {
                                 range: [...option.value],
                               },
                             }));
+
+                            _debouncedSubmit();
                           }}
                           checked={
                             !filter.price.isCustom &&
@@ -309,6 +320,8 @@ export default function Home() {
                                 range: [0, 100],
                               },
                             }));
+
+                            _debouncedSubmit();
                           }}
                           checked={filter.price.isCustom}
                           className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -350,6 +363,8 @@ export default function Home() {
                               range: [newMin, newMax],
                             },
                           }));
+
+                          _debouncedSubmit();
                         }}
                         value={
                           filter.price.isCustom
@@ -374,10 +389,7 @@ export default function Home() {
               <EmptyState />
             ) : products ? (
               products.map((product) => (
-                <Product
-                  product={product.metadata!}
-                  key={product.metadata!.id}
-                />
+                <Product product={product.metadata!} key={product.id} />
               ))
             ) : (
               new Array(12)
