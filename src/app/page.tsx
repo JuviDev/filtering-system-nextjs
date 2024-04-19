@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { Product as TProduct } from "@/db";
+import EmptyState from "@/components/Products/EmptyState";
+import Product from "@/components/Products/Product";
+import ProductSkeleton from "@/components/Products/ProductSkeleton";
 
 const SORT_OPTIONS = [
   { name: "None", value: "none" },
@@ -90,6 +93,25 @@ export default function Home() {
           </button>
         </div>
       </div>
+      <section className="pb-24 pt-6">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
+          {/* Filters */}
+          <div></div>
+
+          {/* Products */}
+          <ul className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {products && products.length === 0 ? (
+              <EmptyState />
+            ) : products ? (
+              products.map((product) => <Product product={product.metadata!} />)
+            ) : (
+              new Array(12)
+                .fill(null)
+                .map((_, i) => <ProductSkeleton key={i} />)
+            )}
+          </ul>
+        </div>
+      </section>
     </main>
   );
 }
